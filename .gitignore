@@ -1,0 +1,11 @@
+
+readmePrivate.md
+
+# Dependencies
+node_modules
+
+# Production
+.env
+.certs
+
+**/.DS_Store
