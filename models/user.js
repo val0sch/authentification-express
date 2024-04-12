@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../db.config");
+const bcrypt = require("bcrypt");
 
 const User = sequelize.define(
   "user",
@@ -30,10 +31,8 @@ const User = sequelize.define(
       unique: true,
     },
     password: {
-      // type: DataTypes.STRING(64),
-      type: DataTypes.STRING,
-      allowNull: false,
-      // is: /^[0-9a-f]{64}$/i, // contrainte en regex
+      type: DataTypes.STRING(64),
+      is: /^[0-9a-f]{64}$/i,
     },
     role: {
       type: DataTypes.STRING,
@@ -43,5 +42,19 @@ const User = sequelize.define(
   },
   { paranoid: true } // soft delete (archive)
 );
+
+//hook sequelize
+// avant la création le mot de passe est haché
+User.beforeCreate(async (user, options) => {
+  let hash = await bcrypt.hash(
+    user.password,
+    parseInt(process.env.BCRYPT_SALT_ROUND)
+  );
+  user.password = hash;
+});
+
+User.checkPassword = async (password, originelPassword) => {
+  return await bcrypt.compare(password, originelPassword);
+};
 
 module.exports = User;
